@@ -6,6 +6,7 @@ require 'nokogiri'
 require 'yaml'
 require 'logger'
 require 'data_mapper'
+require_relative 'models.rb'
 
 #Configuring seed file
 SEED = File.join(Dir.pwd, 'seeds.yaml')
