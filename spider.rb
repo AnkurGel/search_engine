@@ -13,45 +13,50 @@ SEED = File.join(Dir.pwd, 'seeds.yaml')
 #Configuring database
 DataMapper.setup(:default, "sqlite:///#{File.join(Dir.pwd, 'data.db')}")
 
+#Initializing logger
+logger = Logger.new STDOUT
+logger.level = Logger::WARN
+
+
 # Sanitizes a URL
 def sanitize(site)
   url = URI(site)
   begin
   url = URI::HTTP.build({host: url.to_s}) if url.instance_of? URI::Generic 
   rescue URI::InvalidComponentError => e
-
+    logger.warn("#{site} is not a valid URL.")
   end
-
   return url.to_s
 end
+
 class URI::InvalidURL < Exception; end
 
-class String
-  def valid_url?
-    true
-  end
-end
 
-Psych.load(File.open(SEED)).each do |site|
-  next unless site.valid_url?
-  site = sanitize(site)
+#Traverse the seeds and start crawling ...
+YAML.load(File.open(SEED)).each do |site|
+  begin
+    site = sanitize(site)
+  rescue
+    next
+  end
   puts "Found #{site} <-- Crawling ..."
   begin
   doc = Nokogiri::HTML(open(site))
   links = doc.css('a').map do |link|
     if link['href']
-      URI.parse(site, link['href']).to_s if link['href'].to_s.start_with?("/")
-    else
-      link['href'].to_s
+      link = link['href']
+      link = URI.join(site, link).to_s if link.start_with?("/")
+      link.to_s
+    else nil
     end
-  end.uniq
+  end.uniq.compact
   p links
   rescue OpenURI::HTTPError => e
     puts "Couldn't connect - #{e.message}"
   rescue Timeout::Error => e
     puts "Request timed out! - #{e.message}"
   rescue Exception => e
-    puts "Something went wrong - #{e.message}"
+    puts "Something went wrong - #{e.inspect} - #{e.message}"
   end
 end
 
