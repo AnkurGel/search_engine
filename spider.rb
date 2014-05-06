@@ -4,6 +4,11 @@ require 'bundler/setup'
 require 'open-uri'
 require 'nokogiri'
 require 'yaml'
+require 'webrobots'
+require 'fast-stemmer'
+#require 'debugger'
+require 'wirb'
+require 'awesome_print'
 require 'logger'
 require 'data_mapper'
 require_relative 'models.rb'
@@ -18,12 +23,13 @@ DataMapper.setup(:default, "sqlite:///#{File.join(Dir.pwd, 'data.db')}")
 logger = Logger.new STDOUT
 logger.level = Logger::WARN
 
+RESTRICTED_TYPES = %w(.pdf .doc .docx .xls .xlsx .ppt .pptx .json .mpg .mpeg .avi .wmv .xml .mp3 .m4a .jpg .gif .png .bmp .zip .rar .7z .asc)
 
 # Sanitizes a URL
 def sanitize(site)
   url = URI(site)
   begin
-  url = URI::HTTP.build({host: url.to_s}) if url.instance_of? URI::Generic 
+    url = URI::HTTP.build({ host: url.to_s }) if url.instance_of? URI::Generic 
   rescue URI::InvalidComponentError => e
     logger.warn("#{site} is not a valid URL.")
   end
