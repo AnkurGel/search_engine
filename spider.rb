@@ -38,13 +38,13 @@ end
 
 class URI::InvalidURL < Exception; end
 
+robots = WebRobots.new('AnkurBot/1.0')
 
-#Traverse the seeds and start crawling ...
-YAML.load(File.open(SEED)).each do |site|
-  begin
-    site = sanitize(site)
-  rescue
-    next
+def scrub(link)
+  unless link.nil?
+    link = link.scan(/.*(?=#)/)[0] if link.match(/#/)
+    return nil if RESTRICTED_TYPES.include? File.extname(link)
+    URI.join(URI.escape(link)).normalize.to_s
   end
   puts "Found #{site} <-- Crawling ..."
   begin
