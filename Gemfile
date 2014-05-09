@@ -8,6 +8,12 @@ gem 'debugger'
 
 gem 'fast-stemmer'
 gem 'webrobots'
+gem 'ruport'
+
+#Web App
+gem 'sinatra'
+gem 'thin'
+gem 'haml'
 
 #Utility gems
 gem 'awesome_print'
