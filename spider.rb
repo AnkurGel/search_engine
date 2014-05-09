@@ -4,6 +4,7 @@ require 'bundler/setup'
 require 'open-uri'
 require 'nokogiri'
 require 'yaml'
+require 'debugger'
 require 'webrobots'
 require 'fast-stemmer'
 require 'wirb'
@@ -84,14 +85,15 @@ def add_to_index(url, doc)
       loc.word = Word.first_or_new(stem: word)
       loc.link = link
       puts "    --> Writing word - #{word} at index #{index}"
-      loc.save
+      #loc.save
     end
     puts "    --> Writing title - #{title.text}"
     link.title = title.text
     link.save
-    true
+    link
   else
-    false
+    #return link without modification
+    link
   end
 end
 
@@ -111,9 +113,10 @@ loop do
       begin
         #if link.new? or link.indexable?
         doc = Nokogiri::HTML(open(site))
-        add_to_index(site, doc)
+        link = add_to_index(site, doc)
+        links = []
         puts "  Now crawling the #{site} for further links... <--"
-        links = doc.css('a').map do |link|
+        doc.css('a').each do |link|
           if link['href']
             begin
               link = link['href']
@@ -121,25 +124,18 @@ loop do
               link = scrub(link)
               #link = scrub(URI.join(site, link).to_s) if link.start_with?("/")
               link ? (robots.allowed?(URI(link)) ? link : nil) : link
-              accumulated_links << link
+              links << link if link
+              #accumulated_links << link
 
               puts " -> #{link}"
-              #rescue OpenURI::HTTPError => e
-              #  puts "Couldn't connect - #{e.message}"
-              #  nil
-              #rescue Timeout::Error => e
-              #  puts "Request timed out! - #{e.message}"
-              #  nil
             rescue Exception => e
-              puts "Something went wrong in here - #{e.inspect} - #{e.message}"
+              puts "Something went wrong in here - #{e.message}"
               nil
             end
-
-          else nil
           end
-        end.uniq.compact
+        end
 
-        p links
+
       rescue OpenURI::HTTPError => e
         puts "Couldn't connect - #{e.message}"
       rescue Timeout::Error => e
@@ -147,12 +143,17 @@ loop do
       rescue Exception => e
         puts "Something went wrong - #{e.inspect} - #{e.message}"
       end
-      links ||= []
+
+      #Saving number of outbound links C(t) for PageRank algorithm
+      links = links.uniq.compact
+      link.outbound_links = links.count
+      link.save
+      accumulated_links << links
     else
-      []
+      puts "  --> #{site} is already indexed recently. Skipping to next ..."
     end
   end
-  accumulated_links = accumulated_links.uniq.compact
+  accumulated_links = accumulated_links.flatten.uniq.compact
 
   File.open(SEED, 'wb') do |file|
     file.puts("---")
