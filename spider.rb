@@ -24,7 +24,13 @@ logger.level = Logger::WARN
 
 RESTRICTED_TYPES = %w(.pdf .doc .docx .xls .xlsx .ppt .pptx .json .mpg .mpeg .avi .wmv .xml .mp3 .m4a .jpg .gif .png .bmp .zip .rar .7z .asc)
 
-# Sanitizes a URL
+
+# Sanitizes a URL by making it validate across `URI` class.
+#  makes sure that object has correct URI host(http/https) so that it can
+#  be requested correctly with `open-uri`
+#
+# @param site [String] the site to be parsed
+# @return [String] the properly structured URL(with URI host)
 def sanitize(site)
   url = URI(site)
   begin
@@ -39,6 +45,10 @@ class URI::InvalidURL < Exception; end
 
 robots = WebRobots.new('AnkurBot/1.0')
 
+
+# @param link [String] contains the URL to be scrubbed
+# @return [String, nil] the object contains the scrubbed URL(free from anchor)
+#   or nil if it has restricted MIME or invalid structure.
 def scrub(link)
   unless link.nil?
     link = link.scan(/.*(?=#)/)[0] if link.match(/#/)
@@ -49,6 +59,14 @@ end
 
 COMMON_WORDS = File.read('common_words').split("\n")
 
+# Performs indexing.
+#  Finds words --> Removes `COMMON_WORDS` --> Stems remaining
+#  --> sets association b/w the word and it's location in page
+#  Writes words, locations and link to database.
+#
+# @param url [String] the object containing the URL of site being indexed
+# @param doc [Nokogiri::HTML::Document] the document nodes from which body etc can be extracted
+# @return [Link] the object which is indexed
 def add_to_index(url, doc)
   # Indexing
   link = Link.first_or_new(url: url)
