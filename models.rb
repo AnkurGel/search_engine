@@ -14,6 +14,8 @@ class Link
   property :id, Serial
   property :url, String, length: 255
   property :title, String, length: 255
+  property :outbound_links, Integer
+  property :rank, Decimal, default: 1.0
   property :created_at, DateTime, default: lambda { |r, p| 
     Time.now.to_datetime
   }
