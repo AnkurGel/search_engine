@@ -1,0 +1,25 @@
+!!!
+%html
+  %head
+    %link{rel: 'stylesheet', href: 'css/styles.css'}
+    %title OneSearch
+  %body
+    #header
+      %h2 OneSearch
+    #form
+      %form{ action: '/search', method: 'post' }
+        %input{ type: 'text', name: 'query' }
+        %input{ type: 'submit', value: 'Search', class: 'button' }
+    - if @results and not @results.empty?
+      #results
+        - @results.each do |link, score|
+          .entry
+            .title
+              %a{href: link.url}= link.title
+            .url= link.url
+            .score
+              Score:
+              %span.figure= score
+    #footer
+      Made with <span class="love">love</span>, at MSIT.
+

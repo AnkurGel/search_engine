@@ -1,0 +1,45 @@
+body {
+  background-color: #eaeaea;
+}
+
+#results {
+    margin: 40px 20px 5px;
+    border: 2px solid grey;
+}
+
+.entry {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin: 3px 2px 2px;
+}
+
+.entry .title {
+    font-size: 1.3em;
+    font-family: "Lucida Grande",sans-serif;
+}
+
+.entry .url {
+    font-size: 0.8em;
+}
+
+.entry .score {
+    color: #757575;
+    font-weight: bolder;
+    font-variant: small-caps;
+}
+
+.score .figure {
+    color: #744c68;
+}
+
+#footer {
+    padding: 20px;
+    margin: 25px 20px;
+    text-align: center;
+    border-top: 1px solid darkolivegreen;
+}
+#footer .love {
+    color: red;
+    font-style: italic;
+    font-variant: small-caps;
+}
