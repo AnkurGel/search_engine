@@ -1,7 +1,6 @@
 require 'sinatra'
 require 'haml'
 require './seeker'
-require 'debugger'
 
 get '/' do
   haml :index

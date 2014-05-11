@@ -1,6 +1,5 @@
 require_relative 'models.rb'
 require 'fast-stemmer'
-require 'debugger'
 require 'ruport'
 
 SEARCH_LIMIT = 19
@@ -22,7 +21,6 @@ def search(for_text)
     joins << "loc#{index}.link_id = loc#{index+1}.link_id"
     ids << "loc#{index}.word_id = #{w.id}"
   }
-  debugger
   joins.pop
   @common_select = "from #{tables.join(", ")} where #{(joins + ids).join(" and ")} group by loc0.link_id"
   rank[0..SEARCH_LIMIT]
@@ -34,7 +32,6 @@ end
 
 def frequency_ranking
   freq_sql= "select loc0.link_id, count(loc0.link_id) as count #{@common_select} order by count desc"
-  debugger
   list = repository(:default).adapter.select(freq_sql)
   rank = {}
   list.size.times { |i| rank[list[i].link_id] = list[i].count.to_f/list[0].count.to_f }
