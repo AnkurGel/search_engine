@@ -2,8 +2,11 @@ body {
   background-color: #eaeaea;
 }
 
-#results {
-    margin: 40px 20px 5px;
+.all_tabs {
+    margin-top: 15px;
+}
+.results-area {
+    margin: 0px 0px 5px;
     border: 2px solid grey;
 }
 
@@ -20,6 +23,9 @@ body {
 
 .entry .url {
     font-size: 0.8em;
+}
+.query {
+    width: 460px !important;
 }
 
 .entry .score {
