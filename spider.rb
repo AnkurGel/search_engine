@@ -4,7 +4,6 @@ require 'bundler/setup'
 require 'open-uri'
 require 'nokogiri'
 require 'yaml'
-require 'debugger'
 require 'webrobots'
 require 'fast-stemmer'
 require 'wirb'
@@ -85,10 +84,11 @@ def add_to_index(url, doc)
       loc.word = Word.first_or_new(stem: word)
       loc.link = link
       puts "    --> Writing word - #{word} at index #{index}"
-      #loc.save
+      loc.save
     end
     puts "    --> Writing title - #{title.text}"
     link.title = title.text
+    link.indexed = true
     link.save
     link
   else
@@ -113,7 +113,7 @@ loop do
       begin
         #if link.new? or link.indexable?
         doc = Nokogiri::HTML(open(site))
-        link = add_to_index(site, doc)
+        current_link = add_to_index(site, doc)
         links = []
         puts "  Now crawling the #{site} for further links... <--"
         doc.css('a').each do |link|
@@ -124,7 +124,16 @@ loop do
               link = scrub(link)
               #link = scrub(URI.join(site, link).to_s) if link.start_with?("/")
               link ? (robots.allowed?(URI(link)) ? link : nil) : link
-              links << link if link
+
+              #TODO: Don't do below, if link is linking itself
+              if link
+                processed_link = Link.first_or_create(url: link)
+
+                if !current_link.outbounds.include?(processed_link) and (current_link != processed_link)
+                  current_link.outbounds << processed_link unless current_link.outbounds.include?(processed_link)
+                  links << link
+                end
+              end
               #accumulated_links << link
 
               puts " -> #{link}"
@@ -134,7 +143,11 @@ loop do
             end
           end
         end
-
+        #Saving number of outbound links C(t) for PageRank algorithm
+        links = links.uniq.compact
+        current_link.total_outbound_links = links.count
+        current_link.save
+        accumulated_links << links
 
       rescue OpenURI::HTTPError => e
         puts "Couldn't connect - #{e.message}"
@@ -144,11 +157,6 @@ loop do
         puts "Something went wrong - #{e.inspect} - #{e.message}"
       end
 
-      #Saving number of outbound links C(t) for PageRank algorithm
-      links = links.uniq.compact
-      link.outbound_links = links.count
-      link.save
-      accumulated_links << links
     else
       puts "  --> #{site} is already indexed recently. Skipping to next ..."
     end
