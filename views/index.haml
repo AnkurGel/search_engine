@@ -1,25 +1,112 @@
 !!!
 %html
   %head
-    %link{rel: 'stylesheet', href: 'css/styles.css'}
+    %link{ rel: 'stylesheet', href: 'css/styles.css' }
+    %link{ rel: 'stylesheet', href: 'css/morris.css' }
+    %link{ rel: 'stylesheet', href: 'css/bootstrap.css' }
+
+    %script{ src: 'javascript/jquery.min.js' }
+    %script{ src: 'javascript/raphael.js' }
+    %script{ src: 'javascript/morris.js' }
+    %script{ src: 'javascript/bootstrap.js' }
+    %script{ src: 'javascript/graphs.js' }
+
     %title OneSearch
   %body
-    #header
-      %h2 OneSearch
+    .container
+      .row.col-xs-12
+        #header
+          %h1.text-center OneSearch
     #form
-      %form{ action: '/search', method: 'post' }
-        %input{ type: 'text', name: 'query' }
-        %input{ type: 'submit', value: 'Search', class: 'button' }
+      .container
+        .row.col-xs-6.col-xs-offset-3
+
+          %form{ action: '/search', method: 'post', role: 'form', class: 'form-inline' }
+            .form-group
+              %input{ type: 'text', name: 'query', class: 'form-control query', placeholder: "Enter your query here..." }
+            .form-group
+              %input{ type: 'submit', value: 'Search', class: 'button btn btn-success' }
     - if @results and not @results.empty?
-      #results
-        - @results.each do |link, score|
-          .entry
-            .title
-              %a{href: link.url}= link.title
-            .url= link.url
-            .score
-              Score:
-              %span.figure= score
+      .container.all_tabs
+        .row.col-xs-12
+          %ul#myTab.nav.nav-tabs
+            %li
+              %a{ href: '#results', "data-toggle" => 'tab', "data-identifier" => "results" } Results
+            %li
+              %a{ href: '#frequency', "data-toggle" => 'tab', "data-identifier" => "freq" } Frequency
+            %li
+              %a{ href: '#location', "data-toggle" => 'tab', "data-identifier" => "loc" } Location
+            %li
+              %a{ href: '#distance', "data-toggle" => 'tab', "data-identifier" => 'dist' } Distance
+            %li
+              %a{ href: '#pagerank', "data-identifier" => "pr" } PageRank
+
+          .tab-content
+            #results.tab-pane.active{ "data-graph" => @results.each_with_index.map{ |obj,i| { 'id' => (i+1).to_s, 'score' => obj[1] } }.to_json}
+              .row.col-xs-7
+                .results-area
+                  - @results.each do |link, score|
+                    .entry
+                      .title
+                        %a{ href: link.url }= link.title
+                      .url= link.url
+                      .score
+                        Score:
+                        %span.figure= score
+              .row.col-xs-5
+                #results-graph
+            #frequency.tab-pane{ "data-graph" => @frequency.each_with_index.map{ |obj, i| { 'id' => (i+1).to_s, 'score' => obj[1] } }.to_json}
+              .row.col-xs-7
+                .results-area
+                  - @frequency.each do |link, score|
+                    .entry
+                      .title
+                        %a{ href: link.url }= link.title
+                      .url= link.url
+                      .score
+                        Score:
+                        %span.figure= score
+              .row.col-xs-5
+                #frequency-graph
+            #location.tab-pane{ "data-graph" => @location.each_with_index.map{ |obj, i| { 'id' => (i+1).to_s, 'score' => obj[1] } }.to_json}
+              .row.col-xs-7
+                .results-area
+                  - @location.each do |link, score|
+                    .entry
+                      .title
+                        %a{ href: link.url }= link.title
+                      .url= link.url
+                      .score
+                        Score:
+                        %span.figure= score
+              .row.col-xs-5
+                #location-graph
+            #distance.tab-pane{ "data-graph" => @distance.each_with_index.map{ |obj, i| { 'id' => (i+1).to_s, 'score' => obj[1] } }.to_json}
+              .row.col-xs-7
+                .results-area
+                  - @distance.each do |link, score|
+                    .entry
+                      .title
+                        %a{ href: link.url }= link.title
+                      .url= link.url
+                      .score
+                        Score:
+                        %span.figure= score
+              .row.col-xs-5
+                #distance-graph
+            #pagerank.tab-pane{ "data-graph" => @pagerank.each_with_index.map{ |obj, i| { 'id' => (i+1).to_s, 'score' => obj[1] } }.to_json}
+              .row.col-xs-7
+                .results-area
+                  - @pagerank.each do |link, score|
+                    .entry
+                      .title
+                        %a{ href: link.url }= link.title
+                      .url= link.url
+                      .score
+                        Score:
+                        %span.figure= score
+              .row.col-xs-5
+                #pagerank-graph
     #footer
       Made with <span class="love">love</span>, at MSIT.
 
