@@ -9,12 +9,23 @@ end
 
 post '/search' do
   engine = SearchEngine::Query.new
-  @results = SearchEngine::Query.new.search(params[:query])
+  begin
 
-  @frequency = engine.search(params[:query], :frequency)
-  @location = engine.search(params[:query], :location)
-  @distance = engine.search(params[:query], :distance)
-  @pagerank = engine.search(params[:query], :pagerank)
+    @search_words = params[:query]
+    @results = SearchEngine::Query.new.search(@search_words)
 
-  haml :index
+    @frequency = engine.search(@search_words, :frequency)
+    @location = engine.search(@search_words, :location)
+    @distance = engine.search(@search_words, :distance)
+    @pagerank = engine.search(@search_words, :pagerank)
+  rescue Exception => e
+    @search_words = params[:query]
+    haml :error
+  else
+
+    haml :index
+  end
+
+
+
 end

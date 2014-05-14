@@ -98,11 +98,11 @@ module SearchEngine
         [Link.get(x), y]
       end
       puts Ruport::Data::Table.new(column_names: column_names,
-                                   data: rows.map{ |x, y| [x.url, y]}).to_text
+                                   data: rows.map{ |x, y| [y, x.url]}).to_text
       rows
     end
   end
 end
 
 SearchEngine::Query.new.search("placement", :pagerank)
-SearchEngine::Query.new.search("placement", :frequency)
+SearchEngine::Query.new.search("placements 2013", :distance)

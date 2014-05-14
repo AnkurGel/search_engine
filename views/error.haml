@@ -1,0 +1,28 @@
+!!!
+%html
+  %head
+    %link{ rel: 'stylesheet', href: 'css/styles.css' }
+    %link{ rel: 'stylesheet', href: 'css/morris.css' }
+    %link{ rel: 'stylesheet', href: 'css/bootstrap.css' }
+
+    %script{ src: 'javascript/jquery.min.js' }
+    %script{ src: 'javascript/raphael.js' }
+    %script{ src: 'javascript/morris.js' }
+    %script{ src: 'javascript/bootstrap.js' }
+    %script{ src: 'javascript/graphs.js' }
+
+    %title OneSearch
+  %body
+    .container
+      .row.col-xs-12
+        #header
+          %h1.text-center OneSearch
+    .container      
+      .row.col-xs-6.col-xs-offset-3
+        .errormessage.text-center
+          No Match Found for 
+          = @search_words
+          !
+    .container      
+      .row.col-x6-12
+        %a{ href: '/'} Let me search something else...

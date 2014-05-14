@@ -23,7 +23,7 @@
 
           %form{ action: '/search', method: 'post', role: 'form', class: 'form-inline' }
             .form-group
-              %input{ type: 'text', name: 'query', class: 'form-control query', placeholder: "Enter your query here..." }
+              %input{ type: 'text', name: 'query', class: 'form-control query', placeholder: "Search away..." }
             .form-group
               %input{ type: 'submit', value: 'Search', class: 'button btn btn-success' }
     - if @results and not @results.empty?
