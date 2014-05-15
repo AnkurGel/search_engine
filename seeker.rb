@@ -13,8 +13,8 @@ module SearchEngine
       @search_params = for_text.gsub(/[\d]|[^\w\s]/, '').split.map(&:downcase).reject do |word|
         COMMON_WORDS.include?(word) or word.size > 25
       end.map(&:stem)
-      words = @search_params.map { |param| "stem = '#{param}'"}
-      word_sql = "select * from words where #{words.join(" or ")}"
+      words = @search_params.map { |param| "stem = '#{param}'" }
+      word_sql = "select * from words where #{words.join(' or ')}"
       @search_words = repository(:default).adapter.select(word_sql)
       puts "#{@search_words}\n\n"
       tables, joins, ids = [], [], []
@@ -44,9 +44,9 @@ module SearchEngine
       #"SELECT loc0.link_id, count(loc0.link_id) as count from locations loc0, locations loc1
       #   where loc0.link_id = loc1.linkd_id, loc0.word_id = 13, loc1.word_id = 14 order by count desc"
       list = repository(:default).adapter.select(freq_sql)
-      list.each_with_object({}){
+      list.each_with_object({}) do
           |link, hash| hash[link.link_id] = link.count.to_f / list[0].count.to_f
-      }
+      end
     end
 
     def location_ranking
@@ -54,9 +54,9 @@ module SearchEngine
       @search_words.each_with_index { |w, index| total << "loc#{index}.position + 1" }
       loc_sql = "select loc0.link_id, (#{total.join(" + ")}) as total #{@common_select} order by total asc"
       list = repository(:default).adapter.select(loc_sql)
-      list.each_with_object({}){
+      list.each_with_object({}) do
           |link, hash| hash[link.link_id] = list[0].total.to_f / link.total.to_f
-      }
+      end
     end
 
     def distance_ranking
@@ -66,22 +66,25 @@ module SearchEngine
       total.size.times { |index| dist << "abs(#{total[index]} - #{total[index + 1]})" unless index == total.size - 1 }
       dist_sql = "select loc0.link_id, (#{dist.join(" + ")}) as dist #{@common_select} order by dist asc"
       list = repository(:default).adapter.select(dist_sql)
-      list.each_with_object({}) { |link, hash|
+      list.each_with_object({}) do |link, hash|
         hash[link.link_id] = list[0].dist.to_f / link.dist.to_f
-      }
+      end
     end
 
     def page_ranking
       query = "select loc0.link_id, count(loc0.link_id) as count #{@common_select} order by count desc"
       list = repository(:default).adapter.select(query)
-      list.map(&:link_id).each_with_object({}) { |link_id, hash|
+      list.map(&:link_id).each_with_object({}) do |link_id, hash|
         hash[link_id] = Link.get(link_id).rank
-      }
+      end
     end
 
     def merge_rankings(*rankings)
       r = {}
-      rankings.each { |ranking| r.merge!(ranking) { |key, oldval, newval| oldval + newval } }
+      # Do summation of values against each key for various rankings:
+      rankings.each do |ranking|
+        r.merge!(ranking) { |key, oldval, newval| oldval + newval }
+      end
       r = r.sort_by { |key, value| -value }
 
       column_names = ["Link", "Rank"]
@@ -89,7 +92,7 @@ module SearchEngine
         [Link.get(x), y]
       end
       puts Ruport::Data::Table.new(column_names: column_names,
-                                   data: rows.map{ |x, y| [x.url, y] }).to_text
+                                   data: rows.map { |x, y| [x.url, y] }).to_text
       rows
     end
 
@@ -101,7 +104,7 @@ module SearchEngine
         [Link.get(x), y]
       end
       puts Ruport::Data::Table.new(column_names: column_names,
-                                   data: rows.map{ |x, y| [y, x.url] }).to_text
+                                   data: rows.map { |x, y| [y, x.url] }).to_text
       rows
     end
   end
@@ -109,4 +112,3 @@ end
 
 SearchEngine::Query.new.search("placement", :pagerank)
 SearchEngine::Query.new.search("operating systems", :distance)
-
